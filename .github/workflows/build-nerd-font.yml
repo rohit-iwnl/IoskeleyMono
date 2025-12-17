@@ -50,8 +50,9 @@ jobs:
       - name: Install Nerd Fonts Patcher
         run: |
           mkdir -p nerd-fonts
-          npx -y gitpick ryanoasis/nerd-fonts font-patcher --out nerd-fonts/
-          npx -y gitpick ryanoasis/nerd-fonts src/glyphs --out nerd-fonts/
+          cd nerd-fonts
+          npx -y gitpick ryanoasis/nerd-fonts font-patcher src/glyphs
+          cd ..
           # Create a wrapper script that runs font-patcher from the correct directory
           NERD_FONTS_DIR="$PWD/nerd-fonts"
           echo "#!/bin/bash
