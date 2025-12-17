@@ -37,28 +37,17 @@ jobs:
         run: |
           sudo apt-get install -y fontforge
 
-      # 4. Set up Node.js, which is required by the Iosevka build scripts and npx
+      # 4. Install Nerd Fonts Patcher
+      - name: Install Nerd Fonts Patcher
+        run: |
+          git clone https://github.com/ryanoasis/nerd-fonts.git --depth=1
+          sudo ln -s "$PWD/nerd-fonts/font-patcher" /usr/local/bin/font-patcher
+
+      # 5. Set up Node.js, which is required by the Iosevka build scripts
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-
-      # 5. Install Nerd Fonts Patcher
-      # We use npx gitpick to download only the font-patcher script and required icon font files
-      # instead of cloning the entire repository. This reduces download time and storage.
-      # The font-patcher script needs to be run from within the nerd-fonts directory to find src/glyphs.
-      - name: Install Nerd Fonts Patcher
-        run: |
-          mkdir -p nerd-fonts
-          cd nerd-fonts
-          npx -y gitpick ryanoasis/nerd-fonts font-patcher src/glyphs
-          cd ..
-          # Create a wrapper script that runs font-patcher from the correct directory
-          NERD_FONTS_DIR="$PWD/nerd-fonts"
-          echo "#!/bin/bash
-          cd $NERD_FONTS_DIR
-          python3 font-patcher \"\$@\"" | sudo tee /usr/local/bin/font-patcher > /dev/null
-          sudo chmod +x /usr/local/bin/font-patcher
 
       # 6. Copy your custom build plan into the Iosevka source directory
       - name: Copy custom build plan
