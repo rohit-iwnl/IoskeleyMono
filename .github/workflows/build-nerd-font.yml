@@ -1,0 +1,154 @@
+name: Build and Release Nerd Fonts
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "private-build-plans.toml"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # 1. Checkout your repository to get the config file
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Checkout the official Iosevka repository to get the build tools
+      - name: Checkout Iosevka source
+        uses: actions/checkout@v4
+        with:
+          repository: be5invis/Iosevka
+          path: iosevka-src
+          fetch-depth: 1
+
+      # 3. Install system dependencies required by Iosevka
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ttfautohint python3
+
+      - name: Install fontforge
+        run: |
+          sudo apt-get install -y fontforge
+
+      # 4. Install Nerd Fonts Patcher
+      - name: Install Nerd Fonts Patcher
+        run: |
+          git clone https://github.com/ryanoasis/nerd-fonts.git --depth=1
+          sudo ln -s "$PWD/nerd-fonts/font-patcher" /usr/local/bin/font-patcher
+
+      # 5. Set up Node.js, which is required by the Iosevka build scripts
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # 6. Copy your custom build plan into the Iosevka source directory
+      - name: Copy custom build plan
+        run: cp private-build-plans.toml iosevka-src/
+
+      # 7. Install dependencies and build ALL font formats
+      - name: Install dependencies and build all font formats
+        run: |
+          cd iosevka-src
+          npm install
+          npm run build -- contents::IoskeleyMono
+
+      # 8. Verify build output exists for all formats
+      - name: Verify build output
+        run: |
+          if [ ! -d "iosevka-src/dist/IoskeleyMono/TTF" ] || [ ! -d "iosevka-src/dist/IoskeleyMono/WOFF2" ]; then
+            echo "Build output directories (TTF and/or WOFF2) not found!"
+            exit 1
+          fi
+          echo "TTF and WOFF2 build directories verified."
+
+      # 9. Patch the fonts with Nerd Fonts icons
+      # This step uses font-patcher to add Nerd Font glyphs to each TTF font file.
+      # We patch both hinted (TTF) and unhinted (TTF-Unhinted) fonts separately.
+      # The --complete flag adds all available icon sets, --careful preserves original glyphs.
+      - name: Patch fonts with Nerd Fonts
+        run: |
+          # Create output directories for patched fonts
+          mkdir -p iosevka-src/dist/IoskeleyMono/NerdFonts-Hinted
+          mkdir -p iosevka-src/dist/IoskeleyMono/NerdFonts-Unhinted
+
+          # Patch hinted TTF fonts
+          echo "Patching hinted TTF fonts..."
+          for font in iosevka-src/dist/IoskeleyMono/TTF/*.ttf; do
+            echo "Patching $font"
+            font-patcher "$font" \
+              --complete \
+              --careful \
+              --outputdir iosevka-src/dist/IoskeleyMono/NerdFonts-Hinted
+          done
+
+          # Patch unhinted TTF fonts
+          echo "Patching unhinted TTF fonts..."
+          for font in iosevka-src/dist/IoskeleyMono/TTF-Unhinted/*.ttf; do
+            echo "Patching $font"
+            font-patcher "$font" \
+              --complete \
+              --careful \
+              --outputdir iosevka-src/dist/IoskeleyMono/NerdFonts-Unhinted
+          done
+
+      # 10. Create separate ZIP archives for Desktop, Web, and Nerd Font users
+      - name: Package font files into separate archives
+        run: |
+          # Navigate into the main output directory
+          cd iosevka-src/dist/IoskeleyMono
+
+          # Package the Hinted TTF fonts into the workspace root
+          zip -r ../../../IoskeleyMono-TTF-Hinted.zip TTF
+
+          # Package the Unhinted TTF fonts into the workspace root
+          zip -r ../../../IoskeleyMono-TTF-Unhinted.zip TTF-Unhinted
+
+          # Package all WOFF2 fonts into the workspace root
+          zip -r ../../../IoskeleyMono-Web.zip WOFF2 WOFF2-Unhinted
+
+          # Package Nerd Font patched hinted fonts into the workspace root
+          zip -r ../../../IoskeleyMono-NerdFont-Hinted.zip NerdFonts-Hinted
+
+          # Package Nerd Font patched unhinted fonts into the workspace root
+          zip -r ../../../IoskeleyMono-NerdFont-Unhinted.zip NerdFonts-Unhinted
+
+      # 11. Set the release version number
+      - name: Set Release Version
+        id: vars
+        run: echo "tag=$(date +'%Y.%m.%d')-${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+      # 12. Create a new GitHub Release and upload all ZIP files
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: "Release ${{ steps.vars.outputs.tag }}"
+          body: |
+            Automated build triggered by commit ${{ github.sha }}.
+
+            **For Desktop Users:**
+            - `IoskeleyMono-TTF-Hinted.zip`: Fonts with hinting. Best for most users on standard-resolution screens.
+            - `IoskeleyMono-TTF-Unhinted.zip`: Raw fonts without hinting. Preferred by some on high-DPI screens.
+
+            **For Web Developers:**
+            - `IoskeleyMono-Web.zip`: Contains all WOFF2 font files for web use (Hinted and Unhinted).
+
+            **For Terminal / Power Users:**
+            - `IoskeleyMono-NerdFont-Hinted.zip`: Nerd Font patched fonts with hinting. Includes all icon sets (powerline symbols, devicons, etc.).
+            - `IoskeleyMono-NerdFont-Unhinted.zip`: Nerd Font patched fonts without hinting. Includes all icon sets (powerline symbols, devicons, etc.).
+          files: |
+            IoskeleyMono-TTF-Hinted.zip
+            IoskeleyMono-TTF-Unhinted.zip
+            IoskeleyMono-Web.zip
+            IoskeleyMono-NerdFont-Hinted.zip
+            IoskeleyMono-NerdFont-Unhinted.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
