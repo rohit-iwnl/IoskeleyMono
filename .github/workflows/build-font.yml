@@ -1,11 +1,6 @@
 name: Build and Release Font
 
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - "private-build-plans.toml"
-      - ".github/workflows/**"
   workflow_dispatch:
 
 jobs:
