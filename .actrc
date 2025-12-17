@@ -1,0 +1,7 @@
+# Act configuration file
+# Use a specific platform image (optional, defaults to ubuntu-latest)
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# Set default secrets file (optional)
+# --secret-file .secrets
+
