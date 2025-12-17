@@ -35,13 +35,21 @@ jobs:
 
       - name: Install fontforge
         run: |
-          sudo apt-get install -y fontforge
+          sudo apt-get update
+          sudo apt-get install -y fontforge python3-fontforge
+          # Verify python3-fontforge is installed
+          python3 -c "import fontforge" || echo "Warning: fontforge module not available"
 
       # 4. Install Nerd Fonts Patcher
       - name: Install Nerd Fonts Patcher
         run: |
           git clone https://github.com/ryanoasis/nerd-fonts.git --depth=1
-          sudo ln -s "$PWD/nerd-fonts/font-patcher" /usr/local/bin/font-patcher
+          # Create a wrapper script that runs font-patcher from the correct directory
+          NERD_FONTS_DIR="$PWD/nerd-fonts"
+          echo "#!/bin/bash
+          cd $NERD_FONTS_DIR
+          python3 font-patcher \"\$@\"" | sudo tee /usr/local/bin/font-patcher > /dev/null
+          sudo chmod +x /usr/local/bin/font-patcher
 
       # 5. Set up Node.js, which is required by the Iosevka build scripts
       - name: Set up Node.js
