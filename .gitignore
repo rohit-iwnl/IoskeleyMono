@@ -1,3 +1,8 @@
 .vscode
 assets/snippet.js
 assets/SocialPreview.psd
+
+# Local act secrets file
+.secrets
+*.sh
+.github/workflows/build-nerd-font-no-release.yml

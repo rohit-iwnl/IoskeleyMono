@@ -31,14 +31,9 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ttfautohint python3
-
-      - name: Install fontforge
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y fontforge python3-fontforge
-          # Verify python3-fontforge is installed
-          python3 -c "import fontforge" || echo "Warning: fontforge module not available"
+          sudo apt-get install -y ttfautohint python3 fontforge python3-fontforge
+          # Verify python3-fontforge is installed (mandatory check)
+          python3 -c "import fontforge" || { echo "Error: fontforge module not available"; exit 1; }
 
       # 4. Install Nerd Fonts Patcher
       - name: Install Nerd Fonts Patcher
@@ -83,50 +78,65 @@ jobs:
       # The --complete flag adds all available icon sets, --careful preserves original glyphs.
       - name: Patch fonts with Nerd Fonts
         run: |
+          # Store workspace root path
+          WORKSPACE_ROOT="$PWD"
+          
           # Create output directories for patched fonts
-          mkdir -p iosevka-src/dist/IoskeleyMono/NerdFonts-Hinted
-          mkdir -p iosevka-src/dist/IoskeleyMono/NerdFonts-Unhinted
+          mkdir -p "$WORKSPACE_ROOT/iosevka-src/dist/IoskeleyMono/NerdFonts-Hinted"
+          mkdir -p "$WORKSPACE_ROOT/iosevka-src/dist/IoskeleyMono/NerdFonts-Unhinted"
 
           # Patch hinted TTF fonts
           echo "Patching hinted TTF fonts..."
-          for font in iosevka-src/dist/IoskeleyMono/TTF/*.ttf; do
-            echo "Patching $font"
-            font-patcher "$font" \
-              --complete \
-              --careful \
-              --outputdir iosevka-src/dist/IoskeleyMono/NerdFonts-Hinted
+          HINTED_COUNT=0
+          for font in "$WORKSPACE_ROOT/iosevka-src/dist/IoskeleyMono/TTF"/*.ttf; do
+            if [ -f "$font" ]; then
+              echo "Patching $font"
+              font-patcher "$font" \
+                --complete \
+                --careful \
+                --outputdir "$WORKSPACE_ROOT/iosevka-src/dist/IoskeleyMono/NerdFonts-Hinted"
+              HINTED_COUNT=$((HINTED_COUNT + 1))
+            fi
           done
+          echo "Patched $HINTED_COUNT hinted fonts"
 
           # Patch unhinted TTF fonts
           echo "Patching unhinted TTF fonts..."
-          for font in iosevka-src/dist/IoskeleyMono/TTF-Unhinted/*.ttf; do
-            echo "Patching $font"
-            font-patcher "$font" \
-              --complete \
-              --careful \
-              --outputdir iosevka-src/dist/IoskeleyMono/NerdFonts-Unhinted
+          UNHINTED_COUNT=0
+          for font in "$WORKSPACE_ROOT/iosevka-src/dist/IoskeleyMono/TTF-Unhinted"/*.ttf; do
+            if [ -f "$font" ]; then
+              echo "Patching $font"
+              font-patcher "$font" \
+                --complete \
+                --careful \
+                --outputdir "$WORKSPACE_ROOT/iosevka-src/dist/IoskeleyMono/NerdFonts-Unhinted"
+              UNHINTED_COUNT=$((UNHINTED_COUNT + 1))
+            fi
           done
+          echo "Patched $UNHINTED_COUNT unhinted fonts"
 
       # 10. Create separate ZIP archives for Desktop, Web, and Nerd Font users
       - name: Package font files into separate archives
         run: |
-          # Navigate into the main output directory
-          cd iosevka-src/dist/IoskeleyMono
+          # Store workspace root path
+          WORKSPACE_ROOT="$PWD"
+          FONT_DIR="$WORKSPACE_ROOT/iosevka-src/dist/IoskeleyMono"
 
           # Package the Hinted TTF fonts into the workspace root
-          zip -r ../../../IoskeleyMono-TTF-Hinted.zip TTF
+          cd "$FONT_DIR"
+          zip -r "$WORKSPACE_ROOT/IoskeleyMono-TTF-Hinted.zip" TTF
 
           # Package the Unhinted TTF fonts into the workspace root
-          zip -r ../../../IoskeleyMono-TTF-Unhinted.zip TTF-Unhinted
+          zip -r "$WORKSPACE_ROOT/IoskeleyMono-TTF-Unhinted.zip" TTF-Unhinted
 
           # Package all WOFF2 fonts into the workspace root
-          zip -r ../../../IoskeleyMono-Web.zip WOFF2 WOFF2-Unhinted
+          zip -r "$WORKSPACE_ROOT/IoskeleyMono-Web.zip" WOFF2 WOFF2-Unhinted
 
           # Package Nerd Font patched hinted fonts into the workspace root
-          zip -r ../../../IoskeleyMono-NerdFont-Hinted.zip NerdFonts-Hinted
+          zip -r "$WORKSPACE_ROOT/IoskeleyMono-NerdFont-Hinted.zip" NerdFonts-Hinted
 
           # Package Nerd Font patched unhinted fonts into the workspace root
-          zip -r ../../../IoskeleyMono-NerdFont-Unhinted.zip NerdFonts-Unhinted
+          zip -r "$WORKSPACE_ROOT/IoskeleyMono-NerdFont-Unhinted.zip" NerdFonts-Unhinted
 
       # 11. Set the release version number
       - name: Set Release Version
