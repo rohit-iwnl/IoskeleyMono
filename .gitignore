@@ -6,3 +6,4 @@ assets/SocialPreview.psd
 .secrets
 *.sh
 .github/workflows/build-nerd-font-no-release.yml
+.DS_Store

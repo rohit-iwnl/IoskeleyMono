@@ -32,10 +32,6 @@ The easiest way to get the font is to download it directly from the **Releases**
 
 ---
 
-### In Action
-
-![Ioskeley Mono in Action](assets/InAction.png "Ioskeley Mono in real use")
-
 ### Configuration Choices
 
 This configuration uses specific character variants and custom metrics to closely match the look and feel of Berkeley Mono.
@@ -49,8 +45,34 @@ For a complete list of all choices made to match Berkeley Mono, see the [`privat
 
 ---
 
+### Nerd Fonts In Action
+
+If you're using terminal tools like `lsd`, `bat`, or any of those fancy CLI utilities that show icons, you'll probably want the Nerd Fonts version. The patched version adds all those icon glyphs so your terminal doesn't show weird boxes or question marks.
+
+![Nerd Fonts Preview](assets/nerd_fonts/ghostty_ls.png "Ioskeley Mono with Nerd Fonts icons")
+
+![Neovim Workflow](assets/nerd_fonts/nvim_workflow.png "Ioskeley Mono in Neovim workflow")
+
+![Neovim Telescope](assets/nerd_fonts/nvim_telescope.png "Ioskeley Mono with Telescope")
+
+> Theme used in preview: [Gruvbox Dark Hard](https://github.com/morhetz/gruvbox)
+
+The Nerd Fonts patched versions are available in the [GitHub Releases](https://github.com/rohit-iwnl/IoskeleyMono/releases). Just grab the patched font files from there and install them like you would any other font. They include all the Nerd Fonts glyphs while keeping the Berkeley Mono aesthetic intact.
+
+The patched fonts work great with tools like:
+- Terminal file managers (ranger, lf, etc.)
+- Git status indicators
+- Powerline/statusline plugins
+- Any tool that uses icon fonts
+
+Basically, if you see broken icons in your terminal, grab the patched version from the releases and you're good to go.
+
+---
+
 ### License & Credits
 
-**Credits**: Ioskeley Mono is a custom configuration of the Iosevka typeface. All credit for the original design and build system goes to Belleve Invis and the Iosevka contributors.
+**Original Author**: Ioskeley Mono was created by [Ahmed Hatem](https://github.com/ahatem).
+
+**Credits**: Ioskeley Mono is a custom configuration of the [Iosevka](https://github.com/be5invis/Iosevka) typeface. All credit for the original design and build system goes to Belleve Invis and the Iosevka contributors.
 
 Because this is a derivative of Iosevka, it is licensed under the same **SIL Open Font License 1.1**. See the `LICENSE` file for full details.
