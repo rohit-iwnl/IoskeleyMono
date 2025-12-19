@@ -16,8 +16,8 @@ This repository uses GitHub Actions to automatically build the font files whenev
 
 The easiest way to get the font is to download it directly from the **Releases** page.
 
-1. [Click here to go to the Releases Page](https://github.com/ahatem/IoskeleyMono/releases)
-2. Find the latest release and download the `IoskeleyMono-Build.zip` file.
+1. [Click here to go to the Releases Page](https://github.com/rohit-iwnl/IoskeleyMono/releases)
+2. Download the zip file for your needs (Desktop, Web, or Nerd Font versions).
 3. Unzip the file and install the fonts on your system.
 
 ---
