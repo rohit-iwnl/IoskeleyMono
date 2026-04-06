@@ -1,9 +1,9 @@
 [buildPlans.IoskeleyMono]
 family = "Ioskeley Mono"
-spacing = "normal"
+spacing = "term"
 serifs = "sans"
 noCvSs = true
-exportGlyphNames = false
+exportGlyphNames = true
 
 [buildPlans.IoskeleyMono.variants.design]
 one = "no-base"
@@ -150,7 +150,7 @@ css = "italic"
 xHeight = 520
 cap = 690
 ascender = 740
-sb = 85 # Perfect
+sb = 110
 
 accentWidth = 182
 accentClearance = 76
@@ -168,4 +168,3 @@ essRatioLower = 1.03
 essRatioQuestion = 1.03
 archDepth = 152
 smallArchDepth = 157
-
