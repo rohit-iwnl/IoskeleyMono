@@ -1,6 +1,6 @@
 [buildPlans.IoskeleyMono]
 family = "Ioskeley Mono"
-spacing = "fixed"
+spacing = "normal"
 serifs = "sans"
 noCvSs = true
 exportGlyphNames = true
@@ -150,7 +150,7 @@ css = "italic"
 xHeight = 520
 cap = 690
 ascender = 740
-sb = 110
+sb = 95
 
 accentWidth = 182
 accentClearance = 76
